@@ -1,0 +1,46 @@
+﻿using AutoMapper;
+using EatIT.Core.Interface;
+using EatIT.Infrastructure.Data;
+using Microsoft.Extensions.FileProviders;
+using StackExchange.Redis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EatIT.Infrastructure.Repository
+{
+    public class UnitOfWork : IUnitOfWork
+    {
+        private readonly ApplicationDBContext _dbContext;
+
+        private readonly IFileProvider _fileProvider;
+        private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IConnectionMultiplexer _redis;
+
+        public IUserRoleRepository UserRoleRepository {  get; }
+
+        public IUserRepository UserRepository {  get; }
+
+        public IDishRepository DishRepository { get; }
+
+        public ITagRepository TagRepository { get; }
+
+        public IRestaurantRepository RestaurantRepository => throw new NotImplementedException();
+
+        public UnitOfWork(ApplicationDBContext context, IFileProvider fileProvider, IMapper mapper, IConnectionMultiplexer redis)
+        {
+            _dbContext = context;
+            _fileProvider = fileProvider;
+            _mapper = mapper;
+            _redis = redis;
+
+            UserRoleRepository = new UserRoleRepository(_dbContext);
+            UserRepository = new UserRepository(_dbContext, _fileProvider, _mapper);
+            TagRepository = new TagRepository(_dbContext, _fileProvider, _mapper);
+            DishRepository = new DishRepository(_dbContext, _fileProvider, _mapper);
+        }
+    }
+}
